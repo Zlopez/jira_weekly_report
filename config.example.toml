@@ -1,0 +1,29 @@
+# Example config for jira_sync
+
+# General configuration
+[General]
+jira_instance = "https://jira.atlassian.com"  # JIRA instance URL
+jira_project = "Project"  # Name of the project to sync tickets to
+jira_token = "token"  # API token to use for authentication
+# JIRA labels to retrieve from JIRA project
+jira_labels = [
+  "label"
+]
+# JIRA labels to use for categorization of issues
+category_labels = [
+  "label1",
+  "label2"
+]
+# JIRA states that should be retrieved as closed on JIRA project
+jira_closed_states = [
+  "DONE"
+]
+# JIRA states that should be retrieved as open on JIRA project
+jira_open_states = [
+  "IN PROGRESS"
+]
+
+# From which field to obtain link to upstream ticket
+# If set to description, it will take first link to find
+# If left empty it will use the JIRA ticket URL
+url_field = ""

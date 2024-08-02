@@ -1,2 +1,2 @@
 # jira_weekly_report
-Script for generating weekly report from JIRA tickets
+Script for generating reports from JIRA project
