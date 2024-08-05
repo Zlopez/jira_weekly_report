@@ -73,19 +73,43 @@ def generate_report(days_ago: int, till: str, config: str):
     category_labels = config_dict["General"]["category_labels"]
     url_field = config_dict["General"]["url_field"]
 
-    jira_issues = process_issues(closed_issues, False, category_labels, url_field)
-    for label in jira_issues:
-        log.debug(
-            "Retrieved %s issues in category %s",
-            len(jira_issues[label]["closed"]) + len(jira_issues[label]["open"]), label
-        )
-    jira_issues.update(process_issues(open_issues, True, category_labels, url_field))
+    jira_closed_issues = process_issues(closed_issues, False, category_labels, url_field)
+    jira_open_issues = process_issues(open_issues, True, category_labels, url_field)
+
+    jira_issues = {}
+
+    for label in jira_open_issues:
+        if label not in jira_issues:
+            jira_issues[label] = {}
+        jira_issues[label]["open"] = jira_open_issues[label]
+    for label in jira_closed_issues:
+        if label not in jira_issues:
+            jira_issues[label] = {}
+        jira_issues[label]["closed"] = jira_closed_issues[label]
 
     for label in jira_issues:
         log.debug(
             "Retrieved %s issues in category %s",
             len(jira_issues[label]["closed"]) + len(jira_issues[label]["open"]), label
         )
+
+    # Prepare the report for print
+    output = ""
+    for label in jira_issues:
+        output = output + f"<h1>{label}</h1>\n"
+        output = output + "<ul>\n"
+        output = output + "\t<li>Open:</li>\n"
+        output = output + "\t<ul>\n"
+        for issue in jira_issues[label]["open"]:
+            output = output + f"\t\t<li><a href=\"{jira_issues[label]['open'][issue]}\">{issue}</a>\n"
+        output = output + "\t</ul>\n"
+        output = output + "\t<li>Closed:</li>\n"
+        output = output + "\t<ul>\n"
+        for issue in jira_issues[label]["closed"]:
+            output = output + f"\t\t<li><a href=\"{jira_issues[label]['closed'][issue]}\">{issue}</a>\n"
+        output = output + "\t</ul>\n"
+        output = output + "</ul>\n\n"
+    print(output)
 
 
 def process_issues(issues: list, open: bool, category_labels: list, url_field: str) -> dict:
@@ -101,11 +125,6 @@ def process_issues(issues: list, open: bool, category_labels: list, url_field: s
     Returns:
       Processed dictionary with only the values we care about
     """
-    if open:
-        open_key = "open"
-    else:
-        open_key = "closed"
-
     no_label = "Uncategorized"
 
     jira_issues = {}
@@ -129,21 +148,11 @@ def process_issues(issues: list, open: bool, category_labels: list, url_field: s
             for label in issue.fields.labels:
                 if label in category_labels:
                     if label not in jira_issues:
-                        jira_issues[label] = {
-                            "closed": {},
-                            "open": {}
-                        }
-                        jira_issues[label][open_key][issue.fields.summary.strip()] = url
-                    else:
-                        jira_issues[label][open_key][issue.fields.summary.strip()] = url
+                        jira_issues[label] = {}
+                    jira_issues[label][issue.fields.summary.strip()] = url
         else:
-            if no_label in jira_issues:
-                jira_issues[no_label][open_key][issue.fields.summary.strip()] = url
-            else:
-                jira_issues[no_label] = {
-                    "closed": {},
-                    "open": {}
-                }
-                jira_issues[no_label][open_key][issue.fields.summary.strip()] = url
+            if no_label not in jira_issues:
+                jira_issues[no_label] = {}
+            jira_issues[no_label][issue.fields.summary.strip()] = url
 
     return jira_issues
