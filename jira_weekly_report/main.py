@@ -62,10 +62,11 @@ def generate_report(days_ago: int, till: str, config: str):
     jira_closed_states = config_dict["General"]["jira_closed_states"]
     jira_open_states = config_dict["General"]["jira_open_states"]
     jira_labels = config_dict["General"]["jira_labels"]
+    jira_components = config_dict["General"]["jira_components"]
 
-    closed_issues = jira.get_issues(jira_labels, jira_closed_states, since_arg, till)
+    closed_issues = jira.get_issues(jira_labels, jira_components, jira_closed_states, since_arg, till)
 
-    open_issues = jira.get_issues(jira_labels, jira_open_states)
+    open_issues = jira.get_issues(jira_labels, jira_components, jira_open_states)
 
     log.debug("Retrieved %s closed issues", len(closed_issues))
     log.debug("Retrieved %s open issues", len(open_issues))
@@ -142,7 +143,7 @@ def process_issues(issues: list, open: bool, category_labels: list, url_field: s
                 pass
         # Link field is not set, let's use the ticket URL instead
         else:
-            url = issue.fields.url
+            url = issue.permalink()
 
         if issue.fields.labels:
             for label in issue.fields.labels:

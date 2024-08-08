@@ -9,6 +9,10 @@ jira_token = "token"  # API token to use for authentication
 jira_labels = [
   "label"
 ]
+# components to retrieve from JIRA project
+jira_components = [
+  "component"
+]
 # JIRA labels to use for categorization of issues
 category_labels = [
   "label1",

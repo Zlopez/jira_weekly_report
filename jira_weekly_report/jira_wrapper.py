@@ -48,6 +48,7 @@ class JIRA:
     def get_issues(
             self,
             labels: list[str],
+            components: list[str],
             states: list[str],
             updated_since: arrow.Arrow = None,
             updated_till: arrow.Arrow = None,
@@ -58,6 +59,7 @@ class JIRA:
 
         Params:
           labels: Label to retrieve the issues by.
+          components: Components to retrieve the issues by.
           states: List of states to retrieve
           updated_since: Arrow object containing date we want tickets from.
                          Default: None
@@ -67,16 +69,29 @@ class JIRA:
         Returns:
           List of issues.
         """
-        labels_comma = ', '.join("'" + label + "'" for label in labels)
         states_comma = ', '.join("'" + state + "'" for state in states)
         search_query = (
             "project = "
             + self.project
-            + ' AND labels in ('
-            + labels_comma
-            + ')'
             + " AND status in (" + states_comma + ")"
         )
+
+        if labels:
+            labels_comma = ', '.join("'" + label + "'" for label in labels)
+            search_query = search_query + (
+                ' AND labels in ('
+                + labels_comma
+                + ')'
+            )
+
+        if components:
+            components_comma = ', '.join("'" + component + "'" for component in components)
+            search_query = search_query + (
+                ' AND component in ('
+                + components_comma
+                + ')'
+            )
+
         if updated_since and updated_till:
             search_query = search_query + (
                 " AND updatedDate >= " + updated_since.format("YYYY-MM-DD")
