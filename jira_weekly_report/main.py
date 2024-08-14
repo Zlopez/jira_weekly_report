@@ -78,20 +78,23 @@ def generate_report(days_ago: int, till: str, config: str):
     jira_open_issues = process_issues(open_issues, True, category_labels, url_field)
 
     jira_issues = {}
+    issue_count = 0
 
     for label in jira_open_issues:
         if label not in jira_issues:
             jira_issues[label] = {}
         jira_issues[label]["open"] = jira_open_issues[label]
+        issue_count += len(jira_issues[label]["open"])
     for label in jira_closed_issues:
         if label not in jira_issues:
             jira_issues[label] = {}
         jira_issues[label]["closed"] = jira_closed_issues[label]
+        issue_count += len(jira_issues[label]["closed"])
 
     for label in jira_issues:
         log.debug(
             "Retrieved %s issues in category %s",
-            len(jira_issues[label]["closed"]) + len(jira_issues[label]["open"]), label
+            issue_count, label
         )
 
     # Prepare the report for print
@@ -99,16 +102,18 @@ def generate_report(days_ago: int, till: str, config: str):
     for label in jira_issues:
         output = output + f"<h1>{label}</h1>\n"
         output = output + "<ul>\n"
-        output = output + "\t<li>Open:</li>\n"
-        output = output + "\t<ul>\n"
-        for issue in jira_issues[label]["open"]:
-            output = output + f"\t\t<li><a href=\"{jira_issues[label]['open'][issue]}\">{issue}</a>\n"
-        output = output + "\t</ul>\n"
-        output = output + "\t<li>Closed:</li>\n"
-        output = output + "\t<ul>\n"
-        for issue in jira_issues[label]["closed"]:
-            output = output + f"\t\t<li><a href=\"{jira_issues[label]['closed'][issue]}\">{issue}</a>\n"
-        output = output + "\t</ul>\n"
+        if "open" in jira_issues[label]:
+            output = output + "\t<li>Open:</li>\n"
+            output = output + "\t<ul>\n"
+            for issue in jira_issues[label]["open"]:
+                output = output + f"\t\t<li><a href=\"{jira_issues[label]['open'][issue]}\">{issue}</a>\n"
+            output = output + "\t</ul>\n"
+        if "closed" in jira_issues[label]:
+            output = output + "\t<li>Closed:</li>\n"
+            output = output + "\t<ul>\n"
+            for issue in jira_issues[label]["closed"]:
+                output = output + f"\t\t<li><a href=\"{jira_issues[label]['closed'][issue]}\">{issue}</a>\n"
+            output = output + "\t</ul>\n"
         output = output + "</ul>\n\n"
     print(output)
 
