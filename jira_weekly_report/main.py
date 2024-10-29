@@ -78,23 +78,20 @@ def generate_report(days_ago: int, till: str, config: str):
     jira_open_issues = process_issues(open_issues, True, category_labels, url_field)
 
     jira_issues = {}
-    issue_count = 0
 
     for label in jira_open_issues:
         if label not in jira_issues:
             jira_issues[label] = {}
         jira_issues[label]["open"] = jira_open_issues[label]
-        issue_count += len(jira_issues[label]["open"])
     for label in jira_closed_issues:
         if label not in jira_issues:
             jira_issues[label] = {}
         jira_issues[label]["closed"] = jira_closed_issues[label]
-        issue_count += len(jira_issues[label]["closed"])
 
     for label in jira_issues:
         log.debug(
             "Retrieved %s issues in category %s",
-            issue_count, label
+            len(jira_issues[label]["open"]) + len(jira_issues[label]["closed"]), label
         )
 
     # Prepare the report for print
