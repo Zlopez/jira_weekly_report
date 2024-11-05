@@ -91,7 +91,9 @@ def generate_report(days_ago: int, till: str, config: str):
     for label in jira_issues:
         log.debug(
             "Retrieved %s issues in category %s",
-            len(jira_issues[label]["open"]) + len(jira_issues[label]["closed"]), label
+            (len(jira_issues[label]["open"]) if "open" in jira_issues[label] else 0) +
+            (len(jira_issues[label]["closed"]) if "closed" in jira_issues[label] else 0),
+            label
         )
 
     # Prepare the report for print
