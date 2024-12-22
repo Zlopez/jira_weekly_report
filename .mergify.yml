@@ -1,19 +1,20 @@
-pull_request_rules:
+queue_rules:
   - name: renovate
-    actions:
-      queue:
-        method: rebase
-        name: default
-    conditions:
-    - author=renovate[bot]
-    - label!=no-mergify
-    - "#changes-requested-reviews-by=0"
-
+    queue_conditions:
+      - author=renovate[bot]
+      - label!=no-mergify
+      - "#changes-requested-reviews-by=0"
+    merge_conditions: []
+    merge_method: rebase
   - name: default
+    queue_conditions:
+      - label!=no-mergify
+      - '#approved-reviews-by>=1'
+    merge_conditions: []
+    merge_method: rebase
+
+pull_request_rules:
+  - name: default + renovate
+    conditions: []
     actions:
       queue:
-        method: rebase
-        name: default
-    conditions:
-    - label!=no-mergify
-    - '#approved-reviews-by>=1'
