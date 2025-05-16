@@ -44,15 +44,16 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
 
     # Increased font size
     try:
-        text_font_size = 32
+        base_text_font_size = 32
+        text_font_size = base_text_font_size * 2  # double previous size
         header_font_size = text_font_size * 3
         header_font = ImageFont.truetype("DejaVuSans-Bold", header_font_size)
         text_font = ImageFont.truetype("DejaVuSans", text_font_size)
     except IOError:
         header_font = ImageFont.load_default()
         text_font = ImageFont.load_default()
-        header_font_size = 48  # fallback
-        text_font_size = 16
+        header_font_size = 96  # fallback
+        text_font_size = 32
 
     # Increased column width and spacing
     num_cols = len(categories)
@@ -71,7 +72,7 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
         len(jira_issues.get(pattern, {}).get("closed", {})) for _, pattern in categories
     ]
     max_items = max(items_per_col) if items_per_col else 0
-    content_height_per_item = 60  # adjust for larger font
+    content_height_per_item = text_font_size * 2  # adjust for larger font
     top_padding = 40
     bottom_padding = 40
     content_height = top_padding + max_items * content_height_per_item + bottom_padding
@@ -89,6 +90,11 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
 
     draw = ImageDraw.Draw(final_img)
 
+    # Calculate left padding for issue text (about 5 letters of the new font size)
+    sample_letter = "M" * 4
+    letter_width = draw.textbbox((0, 0), sample_letter, font=text_font)[2]
+    issue_left_padding = letter_width
+
     # Draw issues in the content area
     for idx, (display_name, pattern) in enumerate(categories):
         box = columns[idx]
@@ -99,8 +105,8 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
         # Draw category header (display_name) with much larger font and higher position
         header_bbox = draw.textbbox((0, 0), display_name, font=header_font)
         header_width = header_bbox[2] - header_bbox[0]
-        # Position: one header_font_size above previous
-        header_y = header_height + 20 - header_font_size
+        # Position: two header_font_size above previous
+        header_y = header_height + 20 - 2 * header_font_size
         draw.text(
             (box[0] + (col_width - header_width) // 2, header_y),
             display_name,
@@ -111,7 +117,7 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
         for summary, data in issues.items():
             issue_text = f"[{data['key']}] {summary}"
             log.debug(
-                f"Drawing issue {data['key']}: '{summary}' at x={box[0]+30}, y={y_offset}"
+                f"Drawing issue {data['key']}: '{summary}' at x={box[0]+issue_left_padding}, y={y_offset}"
             )
             # Wrap text if too long
             words = issue_text.split()
@@ -120,7 +126,7 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
             for word in words:
                 test_line = " ".join(current_line + [word])
                 bbox = draw.textbbox((0, 0), test_line, font=text_font)
-                if bbox[2] - bbox[0] < (box[2] - box[0] - 60):
+                if bbox[2] - bbox[0] < (box[2] - box[0] - issue_left_padding - 30):
                     current_line.append(word)
                 else:
                     lines.append(" ".join(current_line))
@@ -129,9 +135,12 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
                 lines.append(" ".join(current_line))
             for line in lines:
                 draw.text(
-                    (box[0] + 30, y_offset), line, font=text_font, fill=(255, 255, 255)
+                    (box[0] + issue_left_padding, y_offset),
+                    line,
+                    font=text_font,
+                    fill=(255, 255, 255),
                 )
-                y_offset += 50
+                y_offset += text_font_size + 18
             y_offset += 20
 
     log.debug(f"Saving image report to {output_path}")
