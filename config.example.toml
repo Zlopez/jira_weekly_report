@@ -15,8 +15,9 @@ jira_components = [
 ]
 # JIRA labels to use for categorization of issues
 category_labels = [
-  "label1",
-  "label2"
+  "pagure.io:centos-infra",
+  "pagure.io:fedora-infrastructure",
+  "pagure.io:releng"
 ]
 # JIRA states that should be retrieved as closed on JIRA project
 jira_closed_states = [
@@ -31,3 +32,9 @@ jira_open_states = [
 # If set to description, it will take first link to find
 # If left empty it will use the JIRA ticket URL
 url_field = ""
+
+# This dictionary serves for matching labels with the columns in the infographic
+[categories]
+fedora=["Fedora Infrastructure", "pagure.io:fedora-infrastructure"]
+centos=["CentOS Infrastructure", "pagure.io:centos-infra"]
+releng=["Release Engineering", "pagure.io:releng"]
