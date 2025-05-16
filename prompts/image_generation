@@ -1,0 +1,25 @@
+# screenshot-to-code
+
+You are tasked with converting a screenshot into an image template for generating similar images using Pillow. Follow these steps to complete the task:
+
+1. Analyze the screenshot:
+   Review the provided screenshot carefully. Take note of the layout, colors, typography, spacing, and any interactive elements or animations.
+
+2. Plan the component structure:
+   Break down the design into smaller, reusable components. Identify the main container and its child components. Consider how the layout will respond to different screen sizes.
+
+3. Implement the basic layout:
+   Start by creating the main component and its structure using Pillow. Implement the component hierarchy you planned in step 2.
+
+4. Style:
+   Match the design in the screenshot. Pay attention to:
+
+   - Layout and positioning
+   - Colors and gradients
+   - Typography (font sizes, weights, and styles)
+   - Spacing and padding
+
+8. Maintenance:
+   Include comments in the code to explain complex logic or animations
+
+Remember to focus on accurately reproducing the design from the screenshot while incorporating the additional instructions provided. Use your expertise in Pillow to create a high-quality and visually accurate implementation.
