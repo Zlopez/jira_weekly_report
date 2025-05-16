@@ -81,6 +81,38 @@ def create_image_report(jira_issues: Dict, output_path: str, categories: list):
     # Stretch content_img to the new height
     content_img_resized = content_img.resize((width, content_height))
 
+    # Draw week number on header_img
+    week_number = arrow.utcnow().isocalendar()[1]
+    current_year = arrow.utcnow().year
+    header_draw = ImageDraw.Draw(header_img)
+    try:
+        week_font_size = 550
+        week_font = ImageFont.truetype("DejaVuSans-Bold", week_font_size)
+        year_font_size = week_font_size // 3
+        year_font = ImageFont.truetype("DejaVuSans-Bold", year_font_size)
+    except IOError:
+        week_font = ImageFont.load_default()
+        year_font = ImageFont.load_default()
+        week_font_size = 96
+        year_font_size = 32
+    week_text = str(week_number)
+    year_text = str(current_year)
+    # Place in top right, but move further left and 200px down
+    margin = 350
+    text_bbox = header_draw.textbbox((0, 0), week_text, font=week_font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = header_img.width - text_width - margin
+    y = 400
+    header_draw.text((x, y), week_text, font=week_font, fill=(255,255,255))
+    # Draw year under week number, 3 times smaller, centered
+    year_bbox = header_draw.textbbox((0, 0), year_text, font=year_font)
+    year_width = year_bbox[2] - year_bbox[0]
+    year_height = year_bbox[3] - year_bbox[1]
+    year_x = x + (text_width - year_width) // 2
+    year_y = y + text_height + 200  # increased gap below week number
+    header_draw.text((year_x, year_y), year_text, font=year_font, fill=(255,255,255))
+
     # Compose the final image
     total_height = header_height + content_height + footer_height
     final_img = Image.new("RGB", (width, total_height), (255, 255, 255))
