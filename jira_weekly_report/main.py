@@ -139,9 +139,10 @@ def process_issues(issues: list, open: bool, category_labels: list, url_field: s
         # Get the link to ticket from field
         if url_field:
             try:
-                result = re.match(HTTP_REGEX, issue.get_field(url_field))
-                if result:
-                    url = result[0]
+                if issue.get_field(url_field):
+                    result = re.match(HTTP_REGEX, issue.get_field(url_field))
+                    if result:
+                        url = result[0]
             except AttributeError:
                 log.debug("Couldn't retrieve the url from %s", issue.fields.summary)
                 pass
