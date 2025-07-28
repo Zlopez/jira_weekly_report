@@ -196,13 +196,13 @@ all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2
 
 [[package]]
 name = "jira"
-version = "3.10.4"
+version = "3.10.5"
 description = "Python library for interacting with JIRA via REST APIs."
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "jira-3.10.4-py3-none-any.whl", hash = "sha256:5fe2e490ac3ecb7b7f99a874f383f83a870437e4cd17d1570b8701f78f65e684"},
-    {file = "jira-3.10.4.tar.gz", hash = "sha256:76ab091da01c432896ccba516a5c57fb3662db03ec1f0c3c56f269ceea21b7b7"},
+    {file = "jira-3.10.5-py3-none-any.whl", hash = "sha256:d4da1385c924ee693d6cc9838e56a34e31d74f0d6899934ef35bbd0d2d33997f"},
+    {file = "jira-3.10.5.tar.gz", hash = "sha256:2d09ae3bf4741a2787dd889dfea5926a5d509aac3b28ab3b98c098709e6ee72d"},
 ]
 
 [package.dependencies]
