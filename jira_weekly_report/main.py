@@ -61,77 +61,72 @@ def generate_report(days_ago: int, till: str, config: str):
 
     jira_closed_states = config_dict["General"]["jira_closed_states"]
     jira_open_states = config_dict["General"]["jira_open_states"]
-    jira_labels = config_dict["General"]["jira_labels"]
     jira_components = config_dict["General"]["jira_components"]
 
-    closed_issues = jira.get_issues(jira_labels, jira_components, jira_closed_states, since_arg, till)
+    closed_issues = jira.get_issues(jira_components, jira_closed_states, since_arg, till)
 
-    open_issues = jira.get_issues(jira_labels, jira_components, jira_open_states)
+    open_issues = jira.get_issues(jira_components, jira_open_states)
 
     log.debug("Retrieved %s closed issues", len(closed_issues))
     log.debug("Retrieved %s open issues", len(open_issues))
 
-    category_labels = config_dict["General"]["category_labels"]
     url_field = config_dict["General"]["url_field"]
 
-    jira_closed_issues = process_issues(closed_issues, False, category_labels, url_field)
-    jira_open_issues = process_issues(open_issues, True, category_labels, url_field)
+    jira_closed_issues = process_issues(closed_issues, False, url_field)
+    jira_open_issues = process_issues(open_issues, True, url_field)
 
     jira_issues = {}
 
-    for label in jira_open_issues:
-        if label not in jira_issues:
-            jira_issues[label] = {}
-        jira_issues[label]["open"] = jira_open_issues[label]
-    for label in jira_closed_issues:
-        if label not in jira_issues:
-            jira_issues[label] = {}
-        jira_issues[label]["closed"] = jira_closed_issues[label]
+    for repo in jira_open_issues:
+        if repo not in jira_issues:
+            jira_issues[repo] = {}
+        jira_issues[repo]["open"] = jira_open_issues[repo]
+    for repo in jira_closed_issues:
+        if repo not in jira_issues:
+            jira_issues[repo] = {}
+        jira_issues[repo]["closed"] = jira_closed_issues[repo]
 
-    for label in jira_issues:
+    for repo in jira_issues:
         log.debug(
-            "Retrieved %s issues in category %s",
-            (len(jira_issues[label]["open"]) if "open" in jira_issues[label] else 0) +
-            (len(jira_issues[label]["closed"]) if "closed" in jira_issues[label] else 0),
-            label
+            "Retrieved %s issues from repo %s",
+            (len(jira_issues[repo]["open"]) if "open" in jira_issues[repo] else 0) +
+            (len(jira_issues[repo]["closed"]) if "closed" in jira_issues[repo] else 0),
+            repo
         )
 
     # Prepare the report for print
     output = ""
-    for label in jira_issues:
-        output = output + f"<h1>{label}</h1>\n"
+    for repo in jira_issues:
+        output = output + f"<h1>{repo}</h1>\n"
         output = output + "<ul>\n"
-        if "open" in jira_issues[label]:
+        if "open" in jira_issues[repo]:
             output = output + "\t<li>Open:</li>\n"
             output = output + "\t<ul>\n"
-            for issue in jira_issues[label]["open"]:
-                output = output + f"\t\t<li><a href=\"{jira_issues[label]['open'][issue]}\">{issue}</a>\n"
+            for issue in jira_issues[repo]["open"]:
+                output = output + f"\t\t<li><a href=\"{jira_issues[repo]['open'][issue]}\">{issue}</a>\n"
             output = output + "\t</ul>\n"
-        if "closed" in jira_issues[label]:
+        if "closed" in jira_issues[repo]:
             output = output + "\t<li>Closed:</li>\n"
             output = output + "\t<ul>\n"
-            for issue in jira_issues[label]["closed"]:
-                output = output + f"\t\t<li><a href=\"{jira_issues[label]['closed'][issue]}\">{issue}</a>\n"
+            for issue in jira_issues[repo]["closed"]:
+                output = output + f"\t\t<li><a href=\"{jira_issues[repo]['closed'][issue]}\">{issue}</a>\n"
             output = output + "\t</ul>\n"
         output = output + "</ul>\n\n"
     print(output)
 
 
-def process_issues(issues: list, open: bool, category_labels: list, url_field: str) -> dict:
+def process_issues(issues: list, open: bool, url_field: str) -> dict:
     """
     Process issues retrieved from JIRA and return dictionary we can work with.
 
     Params:
       issues: List of issues to process
       open: Boolean to switch between open and closed issue processing
-      category_labels: Labels to use for categorizing issues
       url_field: Field to get url from
 
     Returns:
       Processed dictionary with only the values we care about
     """
-    no_label = "Uncategorized"
-
     jira_issues = {}
 
     for issue in issues:
@@ -143,22 +138,23 @@ def process_issues(issues: list, open: bool, category_labels: list, url_field: s
                     result = re.match(HTTP_REGEX, issue.get_field(url_field))
                     if result:
                         url = result[0]
+                        repo = "/".join(url.split("/")[:-2])
+                        # Just get the repository from the url
+                        # Expecting url in format https://<forge>/<org>/<repo>/issue(s)/<issue_nr>
+                        if repo not in jira_issues:
+                            jira_issues[repo] = {}
+                        jira_issues[repo][issue.fields.summary.strip()] = url
             except AttributeError:
                 log.debug("Couldn't retrieve the url from %s", issue.fields.summary)
                 pass
         # Link field is not set, let's use the ticket URL instead
         else:
             url = issue.permalink()
-
-        if issue.fields.labels:
-            for label in issue.fields.labels:
-                if label in category_labels:
-                    if label not in jira_issues:
-                        jira_issues[label] = {}
-                    jira_issues[label][issue.fields.summary.strip()] = url
-        else:
-            if no_label not in jira_issues:
-                jira_issues[no_label] = {}
-            jira_issues[no_label][issue.fields.summary.strip()] = url
+            repo = "/".join(url.split("/")[:-2])
+            # Just get the repository from the url
+            # Expecting url in format https://<forge>/<org>/<repo>/issue(s)/<issue_nr>
+            if repo not in jira_issues:
+                jira_issues[repo] = {}
+            jira_issues[repo][issue.fields.summary.strip()] = url
 
     return jira_issues
