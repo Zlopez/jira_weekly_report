@@ -31,6 +31,7 @@ class JIRA:
     def __init__(
         self,
         url: str,
+        username: str,
         token: str,
         project: str,
     ):
@@ -39,10 +40,11 @@ class JIRA:
 
         Params:
           url: URL to JIRA server
+          username: User to authenticate as
           token: Token to use for authentication
           project: Project to work with
         """
-        self.jira = jira.client.JIRA(url, token_auth=token)
+        self.jira = jira.client.JIRA(url, basic_auth=(username, token))
         self.project = project
 
     def get_issues(

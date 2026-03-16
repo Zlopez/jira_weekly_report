@@ -55,6 +55,7 @@ def generate_report(days_ago: int, till: str, config: str):
 
     jira = JIRA(
         url=config_dict["General"]["jira_instance"],
+        username=config_dict["General"]["jira_username"],
         token=config_dict["General"]["jira_token"],
         project=config_dict["General"]["jira_project"],
     )

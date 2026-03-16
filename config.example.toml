@@ -4,6 +4,7 @@
 [General]
 jira_instance = "https://jira.atlassian.com"  # JIRA instance URL
 jira_project = "Project"  # Name of the project to sync tickets to
+jira_username = "username" # User to authenticate as
 jira_token = "token"  # API token to use for authentication
 # JIRA labels to retrieve from JIRA project
 jira_labels = [
