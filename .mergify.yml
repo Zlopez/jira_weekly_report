@@ -24,3 +24,4 @@ priority_rules:
       - author=renovate[bot]
       - "#changes-requested-reviews-by=0"
     priority: 2250
+    allow_checks_interruption: true
